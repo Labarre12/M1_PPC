@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Exports generes par le TP Pruning (--export)
+pruning/exports/*.png
+
+# IDE / outils locaux (optionnel)
+.cursor/
