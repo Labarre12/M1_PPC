@@ -15,24 +15,27 @@ def partitions(n, max_terme=None):
         print("Erreur : n doit être >= 0")
         return []
 
+    # Premier appel : max_terme est None → on l'initialise à n (le terme max possible)
+    # Si max_terme > n : on le réduit à n (inutile de prendre plus que ce qui reste)
     if max_terme is None or max_terme > n:
         max_terme = n
 
-    # Cas de base : il ne reste plus rien à décomposer
+    # Cas de base : n == 0, rien à décomposer → une seule partition : la liste vide
     if n == 0:
         return [[]]
 
     resultat = []
 
-    # On essaie le plus grand terme possible, puis on descend
+    # La limite est min(max_terme, n) : on ne peut pas dépasser le reste disponible
     limite = max_terme
     if n < limite:
         limite = n
 
+    # On essaie i comme premier terme (du plus grand au plus petit pour l'ordre décroissant)
     for i in range(limite, 0, -1):
-        restes = partitions(n - i, i)
+        restes = partitions(n - i, i)  # partitions du reste, avec termes ≤ i (ordre décroissant)
         for reste in restes:
-            partition = [i]
+            partition = [i]            # on préfixe le terme i devant chaque partition du reste
             for valeur in reste:
                 partition.append(valeur)
             resultat.append(partition)
@@ -45,7 +48,7 @@ def afficher_partition(partition):
     texte = ""
     for i in range(len(partition)):
         if i > 0:
-            texte = texte + "+"
+            texte = texte + "+"  # séparateur entre les termes (pas avant le premier)
         texte = texte + str(partition[i])
     return texte
 

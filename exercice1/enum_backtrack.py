@@ -14,19 +14,21 @@ def backtrack_edition(mot, profondeur, k, longueur_min, longueur_max, chemin, re
     profondeur = nombre d'opérations déjà faites
     chemin = mots déjà visités sur la branche courante
     """
+    # Le mot courant est valide si sa longueur est dans les bornes attendues
     if longueur_min <= len(mot) <= longueur_max:
         resultats.add(mot)
 
+    # Élagage : on a utilisé tous les k mouvements autorisés, on s'arrête
     if profondeur >= k:
         return
 
     for voisin in voisins(mot):
         if voisin in chemin:
-            continue
+            continue  # déjà dans la branche courante → cycle, on ignore
 
-        chemin.add(voisin)
+        chemin.add(voisin)   # on descend dans la branche (choix)
         backtrack_edition(voisin, profondeur + 1, k, longueur_min, longueur_max, chemin, resultats)
-        chemin.remove(voisin)  # backtracking
+        chemin.remove(voisin)  # backtracking : on remonte et annule le choix
 
 
 def enumerer_mots_backtrack_edition(mot_reference, k):
@@ -39,7 +41,7 @@ def enumerer_mots_backtrack_edition(mot_reference, k):
     longueur_max = len(mot_reference) + k
 
     resultats = set()
-    chemin = {mot_reference}
+    chemin = {mot_reference}  # initialise le chemin avec le mot de départ
 
     backtrack_edition(mot_reference, 0, k, longueur_min, longueur_max, chemin, resultats)
 
@@ -50,29 +52,32 @@ def enumerer_mots_backtrack_edition(mot_reference, k):
 
 def backtrack_construction(mot_reference, k, longueur, prefixe, resultats):
     """Construit un mot lettre par lettre avec retour arrière."""
+    # Cas de base : le préfixe a atteint la longueur voulue → on évalue le mot complet
     if len(prefixe) == longueur:
         mot = ""
         for lettre in prefixe:
-            mot = mot + lettre
+            mot = mot + lettre  # reconstruction du mot depuis la liste de lettres
 
         if distance_levenshtein(mot_reference, mot) <= k:
-            resultats.add(mot)
+            resultats.add(mot)  # on accepte uniquement si la distance est dans les bornes
         return
 
-    cases_restantes = longueur - len(prefixe)
+    cases_restantes = longueur - len(prefixe)  # nombre de lettres encore à choisir
 
     for lettre in ALPHABET:
-        prefixe.append(lettre)
+        prefixe.append(lettre)  # on essaie cette lettre à la position suivante
 
         mot_partiel = ""
         for l in prefixe:
             mot_partiel = mot_partiel + l
 
         distance = distance_levenshtein(mot_reference, mot_partiel)
+        # Élagage : si même en complétant parfaitement le reste, la distance serait > k, on abandonne
+        # La distance peut baisser d'au plus 1 par lettre ajoutée, d'où le -1
         if distance <= k + cases_restantes - 1:
             backtrack_construction(mot_reference, k, longueur, prefixe, resultats)
 
-        prefixe.pop()
+        prefixe.pop()  # backtracking : on retire la lettre essayée
 
 
 def enumerer_mots_backtrack_construction(mot_reference, k):
@@ -86,6 +91,7 @@ def enumerer_mots_backtrack_construction(mot_reference, k):
 
     resultats = set()
 
+    # On teste chaque longueur possible indépendamment
     for longueur in range(longueur_min, longueur_max + 1):
         backtrack_construction(mot_reference, k, longueur, [], resultats)
 

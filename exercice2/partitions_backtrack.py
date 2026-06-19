@@ -11,22 +11,22 @@ def backtrack_partitions(reste, max_terme, courant, resultats):
     courant   = partition en cours de construction
     resultats = liste où on stocke les solutions trouvées
     """
+    # Cas de base : tout a été décomposé → partition complète
     if reste == 0:
-        # On copie courant pour ne pas le modifier plus tard
         copie = []
         for valeur in courant:
-            copie.append(valeur)
+            copie.append(valeur)  # copie obligatoire : courant sera modifié plus tard par pop()
         resultats.append(copie)
         return
 
     limite = max_terme
     if reste < limite:
-        limite = reste
+        limite = reste  # on ne peut pas prendre un terme plus grand que ce qui reste
 
     for i in range(limite, 0, -1):
-        courant.append(i)                 # choix
-        backtrack_partitions(reste - i, i, courant, resultats)
-        courant.pop()                     # backtracking
+        courant.append(i)                                       # choix : on ajoute le terme i
+        backtrack_partitions(reste - i, i, courant, resultats)  # on résout le reste, termes ≤ i
+        courant.pop()                                           # backtracking : on retire i
 
 
 def partitions_backtrack(n):
@@ -36,7 +36,7 @@ def partitions_backtrack(n):
         return []
 
     resultats = []
-    courant = []
+    courant = []  # liste partagée modifiée par append/pop au fil de la récursion
 
-    backtrack_partitions(n, n, courant, resultats)
+    backtrack_partitions(n, n, courant, resultats)  # max_terme initial = n
     return resultats

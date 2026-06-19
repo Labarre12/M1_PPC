@@ -11,25 +11,25 @@ def voisins(mot):
     """Retourne tous les mots à distance 1 de 'mot'."""
     resultat = set()
 
-    # 1) Suppressions : enlever une lettre à chaque position
+    # 1) Suppressions : on retire la lettre à la position i
     for i in range(len(mot)):
-        nouveau = mot[:i] + mot[i + 1:]
+        nouveau = mot[:i] + mot[i + 1:]  # mot sans la lettre i
         resultat.add(nouveau)
 
-    # 2) Insertions : ajouter une lettre de l'alphabet à chaque position
-    for i in range(len(mot) + 1):
+    # 2) Insertions : on insère chaque lettre de l'alphabet à chaque position possible
+    for i in range(len(mot) + 1):         # +1 car on peut aussi insérer après le dernier caractère
         for lettre in ALPHABET:
-            nouveau = mot[:i] + lettre + mot[i:]
+            nouveau = mot[:i] + lettre + mot[i:]  # on glisse la lettre à la position i
             resultat.add(nouveau)
 
-    # 3) Substitutions : remplacer une lettre par une autre lettre
+    # 3) Substitutions : on remplace la lettre i par chaque autre lettre de l'alphabet
     for i in range(len(mot)):
         for lettre in ALPHABET:
-            if lettre != mot[i]:
+            if lettre != mot[i]:          # inutile de remplacer par la même lettre
                 nouveau = mot[:i] + lettre + mot[i + 1:]
                 resultat.add(nouveau)
 
-    # On garde seulement les mots valides
+    # Filtre final : on ne garde que les mots composés de lettres de l'alphabet malgache
     mots_valides = set()
     for candidat in resultat:
         if mot_valide(candidat):
@@ -47,29 +47,31 @@ def enumerer_mots_bfs(mot_reference, k):
         print("Erreur : le mot de référence contient des lettres hors alphabet.")
         return []
 
+    # Borne sur la longueur : un mot à distance ≤ k diffère d'au plus k caractères
     longueur_min = max(0, len(mot_reference) - k)
     longueur_max = len(mot_reference) + k
 
-    deja_vus = {mot_reference}
-    niveau_courant = {mot_reference}
-    tous_les_mots = {mot_reference}
+    deja_vus      = {mot_reference}  # ensemble des mots déjà découverts (évite les cycles)
+    niveau_courant = {mot_reference}  # mots du niveau BFS courant (distance exacte = tour actuel)
+    tous_les_mots  = {mot_reference}  # résultat final : tous les mots à distance ≤ k
 
+    # Chaque itération correspond à un niveau de distance supplémentaire
     for distance in range(k):
         niveau_suivant = set()
 
         for mot in niveau_courant:
             for voisin in voisins(mot):
                 if voisin in deja_vus:
-                    continue
+                    continue  # déjà trouvé, on passe
 
                 if len(voisin) < longueur_min or len(voisin) > longueur_max:
-                    continue
+                    continue  # élagage : longueur impossible pour distance ≤ k
 
-                deja_vus.add(voisin)
-                niveau_suivant.add(voisin)
-                tous_les_mots.add(voisin)
+                deja_vus.add(voisin)       # on marque pour ne pas le revisiter
+                niveau_suivant.add(voisin) # il sera exploré au prochain niveau
+                tous_les_mots.add(voisin)  # on l'ajoute au résultat
 
-        niveau_courant = niveau_suivant
+        niveau_courant = niveau_suivant  # on passe au niveau suivant
 
     liste_triee = list(tous_les_mots)
     liste_triee.sort()
@@ -85,8 +87,8 @@ def enumerer_mots_par_distance(mot_reference, k):
     longueur_min = max(0, len(mot_reference) - k)
     longueur_max = len(mot_reference) + k
 
-    par_distance = {0: {mot_reference}}
-    deja_vus = {mot_reference}
+    par_distance   = {0: {mot_reference}}  # distance 0 = le mot lui-même
+    deja_vus       = {mot_reference}
     niveau_courant = {mot_reference}
 
     for distance in range(1, k + 1):
@@ -95,17 +97,18 @@ def enumerer_mots_par_distance(mot_reference, k):
         for mot in niveau_courant:
             for voisin in voisins(mot):
                 if voisin in deja_vus:
-                    continue
+                    continue  # déjà assigné à un niveau précédent
 
                 if len(voisin) < longueur_min or len(voisin) > longueur_max:
-                    continue
+                    continue  # élagage longueur
 
                 deja_vus.add(voisin)
                 niveau_suivant.add(voisin)
 
-        par_distance[distance] = niveau_suivant
+        par_distance[distance] = niveau_suivant  # on associe ce niveau à cette distance exacte
         niveau_courant = niveau_suivant
 
+    # Conversion des sets en listes triées pour un affichage cohérent
     resultat = {}
     for distance, mots in par_distance.items():
         liste = list(mots)
